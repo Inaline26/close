@@ -24,24 +24,18 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Извлекаем токен из заголовка
         String token = resolveToken(request);
 
-        // 2. Проверяем валидность токена
         if (token != null && jwtTokenProvider.validateToken(token)) {
 
-            // 3. Извлекаем имя пользователя из токена
             String username = jwtTokenProvider.getUsername(token);
 
-            // 4. Проверяем, что пользователь еще не аутентифицирован
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // 5. Загружаем информацию о пользователе из UserDetailsService
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                // 6. Проверяем, что токен действительно принадлежит пользователю
                 if (userDetails != null) {
-                    // 7. Создаем объект аутентификации
+
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
@@ -49,16 +43,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     userDetails.getAuthorities()
                             );
 
-                    // 8. Устанавливаем дополнительные детали аутентификации
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // 9. Устанавливаем аутентификацию в контексте безопасности
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
         }
 
-        // Продолжаем выполнение цепочки фильтров
         filterChain.doFilter(request, response);
     }
 

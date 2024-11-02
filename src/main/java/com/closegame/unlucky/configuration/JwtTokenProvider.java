@@ -22,27 +22,26 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    // Ключ для подписи JWT
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    // Метод для создания JWT токена
+
     public String createToken(String username, Set<GrantedAuthority> authorities) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
-        // Преобразуем список ролей в строку
+
         String authoritiesString = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .setSubject(username) // Устанавливаем имя пользователя как subject токена
-                .claim("roles", authoritiesString) // Добавляем роли в токен
-                .setIssuedAt(now) // Устанавливаем дату создания токена
-                .setExpiration(expiryDate) // Устанавливаем срок действия токена
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // Подписываем токен секретным ключом
+                .setSubject(username)
+                .claim("roles", authoritiesString)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -50,12 +49,12 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey()) // Устанавливаем ключ для проверки подписи
+                    .setSigningKey(getSigningKey())
                     .build()
-                    .parseClaimsJws(token); // Парсим и проверяем токен
+                    .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // Здесь можно логировать ошибку или выбросить кастомное исключение
+
             return false;
         }
     }
